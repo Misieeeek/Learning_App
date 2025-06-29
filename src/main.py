@@ -20,6 +20,7 @@ class MainWindow(wnd, cls):
         password = self.password_up_input.text()
         confirm_password = self.confirm_password_input.text()
         new_user = Register(username, password, confirm_password)
+        new_user.register_user()
 
 
 if __name__ == "__main__":
