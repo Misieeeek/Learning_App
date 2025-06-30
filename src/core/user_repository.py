@@ -33,7 +33,6 @@ class User_Repository:
         query_create_tbl_user = """CREATE TABLE IF NOT EXISTS user(user_id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT)"""
         cursor.execute(query_create_tbl_user)
 
-        print("User table created")
         connection.commit()
         connection.close()
 

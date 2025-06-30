@@ -17,14 +17,12 @@ class Register:
         else:
             print("Username/password/confirm password doesn't work")
 
-    def input_correct(self, username, password, confirm_password):
-        # CHECK IF USERNAME, PASSWORD, CONFIRM PASSWORD IS NOT NULL
-        # AND IF PASSWORD != CONFIRM PASSWORD
+    def input_correct(self):
         if (
-            username == ""
-            or password == ""
-            or confirm_password == ""
-            or password != confirm_password
+            self.username == ""
+            or self.password == ""
+            or self.confirm_password == ""
+            or self.password != self.confirm_password
         ):
             return False
         return True
