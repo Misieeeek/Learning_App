@@ -23,7 +23,6 @@ class User_Repository:
         )
 
         print("User added")
-
         connection.commit()
         connection.close()
 
@@ -42,8 +41,18 @@ class User_Repository:
         connection = sqlite3.connect("student.db")
         cursor = connection.cursor()
 
-        cursor.execute("UCOUNT(*) FROM user WHERE username = ?", (username,))
+        cursor.execute("SELECT COUNT(*) FROM user WHERE username = ?", (username,))
         result = cursor.fetchone()
         connection.close()
 
         return result[0] > 0
+
+    def get_user_password(self, username):
+        connection = sqlite3.connect("student.db")
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT password FROM user WHERE username = ?", (username,))
+        result = cursor.fetchone()
+
+        connection.close()
+        return result
