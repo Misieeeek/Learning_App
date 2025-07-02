@@ -4,11 +4,18 @@ from core.password_hasher import Password_Hasher
 
 
 class User_Repository:
-    def save_user(self, username, password):
-        connection = sqlite3.connect("student.db")
-        cursor = connection.cursor()
+    def __init__(self, db_path="student.db"):
+        self.db_path = db_path
 
-        hashed_pass = Password_Hasher.hash(self, password)
+    def get_connection_and_cursor(self):
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        return connection, cursor
+
+    def save_user(self, username, password):
+        connection, cursor = self.get_connection_and_cursor()
+
+        hashed_pass = Password_Hasher.hash(password)
 
         self.create_user_table()
 
@@ -22,13 +29,11 @@ class User_Repository:
             (username, hashed_pass),
         )
 
-        print("User added")
         connection.commit()
         connection.close()
 
     def create_user_table(self):
-        connection = sqlite3.connect("student.db")
-        cursor = connection.cursor()
+        connection, cursor = self.get_connection_and_cursor()
 
         query_create_tbl_user = """CREATE TABLE IF NOT EXISTS user(user_id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT)"""
         cursor.execute(query_create_tbl_user)
@@ -37,8 +42,7 @@ class User_Repository:
         connection.close()
 
     def check_username_exists(self, username):
-        connection = sqlite3.connect("student.db")
-        cursor = connection.cursor()
+        connection, cursor = self.get_connection_and_cursor()
 
         cursor.execute("SELECT COUNT(*) FROM user WHERE username = ?", (username,))
         result = cursor.fetchone()
@@ -47,11 +51,18 @@ class User_Repository:
         return result[0] > 0
 
     def get_user_password(self, username):
-        connection = sqlite3.connect("student.db")
-        cursor = connection.cursor()
+        connection, cursor = self.get_connection_and_cursor()
 
         cursor.execute("SELECT password FROM user WHERE username = ?", (username,))
         result = cursor.fetchone()
 
         connection.close()
         return result
+
+    def verify_user(self, username, password):
+        result = self.get_user_password(username)
+        if not result:
+            return False
+
+        hashed_password = result[0]
+        return Password_Hasher.verify(password, hashed_password)
