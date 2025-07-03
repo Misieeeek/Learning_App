@@ -23,7 +23,6 @@ class User_Repository:
             print("Username is used")
             connection.close()
             return
-
         cursor.execute(
             "INSERT INTO user (username, password) VALUES (?, ?)",
             (username, hashed_pass),
@@ -61,7 +60,7 @@ class User_Repository:
 
     def verify_user(self, username, password):
         result = self.get_user_password(username)
-        if not result:
+        if result is None:
             return False
 
         hashed_password = result[0]
