@@ -1,6 +1,13 @@
+# Desinger file
 *.ui
+
+# Database
 *.db
 *.dbout
+
+# Logged user
+src/logged_user.json
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

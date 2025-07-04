@@ -4,6 +4,7 @@ import sys
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication
 
+from core.auto_login import Auto_Login
 from core.login import Login
 from core.register import Register
 
@@ -11,10 +12,18 @@ ui_file = os.path.join(os.path.dirname(__file__), "ui", "main_window.ui")
 wnd, cls = uic.loadUiType(ui_file)
 
 
-class MainWindow(wnd, cls):
+class Main_Window(wnd, cls):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        user = Auto_Login()
+        username = user.load_logged_user()
+        if username is None:
+            self.login_menu.setCurrentWidget(self.logged_out_widget)
+            self.main_widget.setCurrentWidget(self.sign_up_in_widget)
+        else:
+            self.login_menu.setCurrentWidget(self.logged_in_widget)
+            self.main_widget.setCurrentWidget(self.home_widget)
 
     def on_sign_up_btn_pressed(self):
         username = self.username_up_input.text()
@@ -27,11 +36,24 @@ class MainWindow(wnd, cls):
         username = self.username_in_input.text()
         password = self.password_in_input.text()
         user = Login(username, password, parent=self)
-        user.login()
+        if user.login():
+            remember = Auto_Login()
+            if self.stay_logged_cb.isChecked():
+                remember.save_logged_in_out_user(username)
+            else:
+                remember.save_logged_in_out_user()
+            self.main_widget.setCurrentWidget(self.home_widget)
+            self.login_menu.setCurrentWidget(self.logged_in_widget)
+
+    def on_log_out_btn_pressed(self):
+        remember = Auto_Login()
+        remember.save_logged_in_out_user()
+        self.login_menu.setCurrentWidget(self.logged_out_widget)
+        self.main_widget.setCurrentWidget(self.sign_up_in_widget)
 
 
 if __name__ == "__main__":
     app = QApplication([])
-    window = MainWindow()
+    window = Main_Window()
     window.show()
     sys.exit(app.exec_())

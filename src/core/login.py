@@ -17,8 +17,9 @@ class Login:
         db = User_Repository()
         verified = db.verify_user(self.username, self.password)
         if verified:
-            print("Password correct")
+            return True
         else:
             QMessageBox.warning(
                 self.parent, "Error", "User not found or password is incorrect"
             )
+            return False
