@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication
 from core.auto_login import Auto_Login
 from core.login import Login
 from core.register import Register
+from ui.widgets.home_widget import Home_Widget
 
 ui_file = os.path.join(os.path.dirname(__file__), "ui", "main_window.ui")
 wnd, cls = uic.loadUiType(ui_file)
@@ -16,14 +17,7 @@ class Main_Window(wnd, cls):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        user = Auto_Login()
-        username = user.load_logged_user()
-        if username is None:
-            self.login_menu.setCurrentWidget(self.logged_out_widget)
-            self.main_widget.setCurrentWidget(self.sign_up_in_widget)
-        else:
-            self.login_menu.setCurrentWidget(self.logged_in_widget)
-            self.main_widget.setCurrentWidget(self.home_widget)
+        self.login_status()
 
     def on_sign_up_btn_pressed(self):
         username = self.username_up_input.text()
@@ -48,8 +42,18 @@ class Main_Window(wnd, cls):
     def on_log_out_btn_pressed(self):
         remember = Auto_Login()
         remember.save_logged_in_out_user()
-        self.login_menu.setCurrentWidget(self.logged_out_widget)
-        self.main_widget.setCurrentWidget(self.sign_up_in_widget)
+        hw = Home_Widget(self)
+        hw.change_screen_sign_up_in()
+
+    def login_status(self):
+        user = Auto_Login()
+        username = user.load_logged_user()
+        if username is None:
+            hw = Home_Widget(self)
+            hw.change_screen_sign_up_in()
+        else:
+            hw = Home_Widget(self)
+            hw.change_screen_home()
 
 
 if __name__ == "__main__":

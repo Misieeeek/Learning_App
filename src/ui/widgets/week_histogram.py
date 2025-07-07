@@ -3,7 +3,7 @@ from PyQt5.QtGui import QBrush, QColor, QPainter, QPen
 from PyQt5.QtWidgets import QToolTip, QWidget
 
 
-class WeekHistogram(QWidget):
+class Week_Histogram(QWidget):
     def __init__(self, parent=None, data=None):
         super().__init__(parent)
         self.data = data or []
