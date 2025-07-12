@@ -55,18 +55,23 @@ class Week_Histogram(QWidget):
         idx = event.x() // bar_width
 
         if 0 <= idx < len(self.data):
-            if idx != self.hovered_index:
-                self.hovered_index = idx
-                QToolTip.showText(
-                    self.mapToGlobal(event.pos()),
-                    f"Time spent: {self.data[idx]} hours",
-                    self,
-                )
-                self.setStyleSheet("""QToolTip { 
-                           background-color: #3b434d; 
-                           color: white;
-                           border-radius: 25px;
-                           }""")
+            max_h = max(self.data)
+            bar_height = int((self.data[idx] / max_h) * (self.height() - 20))
+            bar_top_y = self.height() - bar_height
+
+            if event.y() >= bar_top_y:
+                if idx != self.hovered_index:
+                    self.hovered_index = idx
+                    QToolTip.showText(
+                        self.mapToGlobal(event.pos()),
+                        f"Time spent: {self.data[idx]} hours",
+                        self,
+                    )
+                    self.setStyleSheet("""QToolTip { 
+                               background-color: #3b434d; 
+                               color: white;
+                               border-radius: 25px;
+                               }""")
         else:
             if self.hovered_index is not None:
                 self.hovered_index = None
