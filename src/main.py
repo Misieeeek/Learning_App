@@ -17,6 +17,7 @@ class Main_Window(wnd, cls):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.home_widget_controller = Home_Widget(self)
         self.login_status()
 
     def on_sign_up_btn_pressed(self):
@@ -38,22 +39,20 @@ class Main_Window(wnd, cls):
                 remember.save_logged_in_out_user()
             self.main_widget.setCurrentWidget(self.home_widget)
             self.login_menu.setCurrentWidget(self.logged_in_widget)
+            self.home_widget_controller.change_screen_home()
 
     def on_log_out_btn_pressed(self):
         remember = Auto_Login()
         remember.save_logged_in_out_user()
-        hw = Home_Widget(self)
-        hw.change_screen_sign_up_in()
+        self.home_widget_controller.change_screen_sign_up_in()
 
     def login_status(self):
         user = Auto_Login()
         username = user.load_logged_user()
         if username is None:
-            hw = Home_Widget(self)
-            hw.change_screen_sign_up_in()
+            self.home_widget_controller.change_screen_sign_up_in()
         else:
-            hw = Home_Widget(self)
-            hw.change_screen_home()
+            self.home_widget_controller.change_screen_home()
 
 
 if __name__ == "__main__":

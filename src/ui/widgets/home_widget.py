@@ -26,8 +26,9 @@ class Home_Widget(QWidget):
             QWidget, "overall_activity_widget"
         )
 
-        if waw_container.layout() is None and oaw_container.layout() is None:
+        if waw_container.layout() is None:
             waw_container.setLayout(QVBoxLayout())
+        if oaw_container.layout() is None:
             oaw_container.setLayout(QVBoxLayout())
 
         waw_layout = waw_container.layout()
@@ -53,5 +54,35 @@ class Home_Widget(QWidget):
         oaw_layout.addWidget(self.overall_activity)
 
     def change_screen_sign_up_in(self):
+        self.cleanup_home_widgets()
         self.parent.login_menu.setCurrentWidget(self.parent.logged_out_widget)
         self.parent.main_widget.setCurrentWidget(self.parent.sign_up_in_widget)
+
+    def clear_layout(self, layout):  # POPRAWKA: dodane 'self'
+        if layout is None:
+            return
+
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+
+    def cleanup_home_widgets(self):
+        """Czyści widgety domowe przed zmianą ekranu"""
+        waw_container = self.parent.home_widget.findChild(
+            QWidget, "week_activity_widget"
+        )
+        oaw_container = self.parent.home_widget.findChild(
+            QWidget, "overall_activity_widget"
+        )
+
+        if waw_container and waw_container.layout():
+            self.clear_layout(waw_container.layout())
+
+        if oaw_container and oaw_container.layout():
+            self.clear_layout(oaw_container.layout())
+
+        self.week_widget = None
+        self.overall_activity = None
