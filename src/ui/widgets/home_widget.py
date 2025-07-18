@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 
+from core.user_activity import User_Activity
 from ui.widgets.overall_activity import Overall_Activity
 from ui.widgets.week_histogram import Week_Histogram
 
@@ -14,6 +15,8 @@ class Home_Widget(QWidget):
     def change_screen_home(self):
         self.parent.login_menu.setCurrentWidget(self.parent.logged_in_widget)
         self.parent.main_widget.setCurrentWidget(self.parent.home_widget)
+
+        activity = User_Activity()
 
         # remove and change to database info
         week_data = [24, 3, 8, 2, 6, 15, 4]
