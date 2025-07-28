@@ -1,3 +1,4 @@
+import calendar
 import os
 import sqlite3
 import sys
@@ -91,6 +92,20 @@ class Test_User_Activity(unittest.TestCase):
 
         self.assertEqual(week, correct_week)
         self.assertNotIn(missing_day, week)
+
+    def test_year_activity(self):
+        start_date = datetime.strptime("2025-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+        days_in_year = 366 if calendar.isleap(start_date.year) else 365
+
+        for i in range(days_in_year):
+            date_str = (start_date + timedelta(days=i)).strftime("%Y-%m-%d %H:%M:%S")
+            self.ua.save_activity(self.username, date_str)
+
+        user_id = self.ua.get_user_id(self.username)
+        year_data = self.ua.get_user_year_activity(user_id)
+        print(year_data)
+
+        self.assertEqual(len(year_data), days_in_year)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 
+from core.auto_login import Auto_Login
 from core.user_activity import User_Activity
 from ui.widgets.overall_activity import Overall_Activity
 from ui.widgets.week_histogram import Week_Histogram
@@ -16,11 +19,15 @@ class Home_Widget(QWidget):
         self.parent.login_menu.setCurrentWidget(self.parent.logged_in_widget)
         self.parent.main_widget.setCurrentWidget(self.parent.home_widget)
 
-        activity = User_Activity()
+        al = Auto_Login()
+        username = al.load_logged_user()
 
-        # remove and change to database info
-        week_data = [24, 3, 8, 2, 6, 15, 4]
-        activity_data = [1, 2, 3, 4, 5, 6, 7] * 12
+        ua = User_Activity()
+        user_id = ua.get_user_id(username)
+        today_date = datetime.now()
+        week_data = ua.get_user_week_activity(user_id, today_date)
+
+        activity_data = ua.get_user_year_activity(user_id)
 
         waw_container = self.parent.home_widget.findChild(
             QWidget, "week_activity_widget"

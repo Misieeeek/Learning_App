@@ -1,5 +1,6 @@
+import calendar
 import sqlite3
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 
 class User_Activity:
@@ -70,4 +71,14 @@ class User_Activity:
         return week_table
 
     def get_user_year_activity(self, user_id):
-        pass
+        current_year = datetime.now().year
+        num_days = 366 if calendar.isleap(current_year) else 365
+        year_table = []
+        start_date = datetime(current_year, 1, 1)
+        for i in range(num_days):
+            day = start_date + timedelta(days=i)
+            date_str = day.strftime("%Y-%m-%d %H:%M:%S")
+            day_result = self.get_user_day_activity(user_id, date_str)
+            if day_result:
+                year_table.append(day_result[0])
+        return year_table
