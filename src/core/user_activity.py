@@ -12,7 +12,7 @@ class User_Activity:
         cursor = connection.cursor()
         return connection, cursor
 
-    def save_activity(self, username, datetime):
+    def save_activity(self, username, start_time, end_time):
         connection, cursor = self.get_connection_and_cursor()
 
         self.create_activity_table()
@@ -22,8 +22,8 @@ class User_Activity:
             return
 
         cursor.execute(
-            "INSERT INTO activity (user_id, datetime) VALUES (?, ?)",
-            (user_id, datetime),
+            "INSERT INTO activity (user_id, start_time, end_time) VALUES (?, ?, ?)",
+            (user_id, start_time, end_time),
         )
 
         connection.commit()
@@ -39,21 +39,31 @@ class User_Activity:
     def create_activity_table(self):
         connection, cursor = self.get_connection_and_cursor()
 
-        query_create_tbl_activity = """CREATE TABLE IF NOT EXISTS activity(activity_id INTEGER PRIMARY KEY, user_id INTEGER, datetime TEXT, FOREIGN KEY (user_id) REFERENCES user(user_id))"""
+        query_create_tbl_activity = """CREATE TABLE IF NOT EXISTS activity(activity_id INTEGER PRIMARY KEY, user_id INTEGER REFERENCES user(user_id), start_time TEXT, end_time TEXT)"""
         cursor.execute(query_create_tbl_activity)
 
         connection.commit()
         connection.close()
 
     def get_user_day_activity(self, user_id, date):
-        connection, cursor = self.get_connection_and_cursor()
+        if isinstance(date, str):
+            try:
+                date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                date = datetime.strptime(date, "%Y-%m-%d")
 
+        start_of_day = date.replace(hour=0, minute=0, second=0)
+        end_of_day = start_of_day + timedelta(days=1)
+
+        start_str = start_of_day.strftime("%Y-%m-%d %H:%M:%S")
+        end_str = end_of_day.strftime("%Y-%m-%d %H:%M:%S")
+
+        connection, cursor = self.get_connection_and_cursor()
         cursor.execute(
-            "SELECT datetime FROM activity WHERE user_id = ? AND datetime LIKE ?",
-            (user_id, date + "%"),
+            "SELECT start_time, end_time FROM activity WHERE user_id = ? AND start_time >= ? AND start_time < ? ORDER BY start_time ASC",
+            (user_id, start_str, end_str),
         )
         result = cursor.fetchone()
-
         connection.close()
         return result
 
@@ -82,3 +92,6 @@ class User_Activity:
             if day_result:
                 year_table.append(day_result[0])
         return year_table
+
+    def convert_time_to_hours(self, date):
+        pass

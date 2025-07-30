@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QToolTip, QWidget
 class Week_Histogram(QWidget):
     def __init__(self, parent=None, data=None):
         super().__init__(parent)
-        self.data = data or []
+        self.data = [float(x) for x in data] if data else []
         self.setMouseTracking(True)
         self.hovered_index = None
         self.labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -54,6 +54,7 @@ class Week_Histogram(QWidget):
             text_x = x + (bar_width // 2) - 10
             qp.setPen(Qt.white)
             qp.drawText(text_x, self.height() - 5, label)
+            qp.end()
 
     def mouseMoveEvent(self, event):
         if not self.data:

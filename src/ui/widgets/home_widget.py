@@ -68,7 +68,7 @@ class Home_Widget(QWidget):
         self.parent.login_menu.setCurrentWidget(self.parent.logged_out_widget)
         self.parent.main_widget.setCurrentWidget(self.parent.sign_up_in_widget)
 
-    def clear_layout(self, layout):  # POPRAWKA: dodane 'self'
+    def clear_layout(self, layout):
         if layout is None:
             return
 

@@ -41,16 +41,20 @@ class Test_User_Activity(unittest.TestCase):
         cursor.execute("PRAGMA table_info(activity)")
         columns = cursor.fetchall()
         column_names = [col[1] for col in columns]
-        expected_columns = ["activity_id", "user_id", "datetime"]
-        self.assertEqual(column_names, expected_columns)
+        expected_columns = ["activity_id", "user_id", "start_time", "end_time"]
         connection.close()
+        self.assertEqual(column_names, expected_columns)
 
     def test_save_user(self):
-        self.ua.save_activity(self.username, self.datetime_str)
+        start = self.datetime_str
+        end = (datetime.now() + timedelta(hours=2)).strftime("%Y-%m-%d %H:%M:%S")
+        self.ua.save_activity(self.username, start, end)
         user_id = self.ua.get_user_id(self.username)
         today = datetime.now().strftime("%Y-%m-%d")
+
         result = self.ua.get_user_day_activity(user_id, today)
-        self.assertEqual(result[0], self.datetime_str)
+        self.assertEqual(result[0], start)
+        self.assertEqual(result[1], end)
 
     def test_week_activity_correct(self):
         start_date = datetime.strptime("2025-07-11 16:57:58", "%Y-%m-%d %H:%M:%S")
@@ -58,10 +62,17 @@ class Test_User_Activity(unittest.TestCase):
             (start_date + timedelta(days=i)).strftime("%Y-%m-%d %H:%M:%S")
             for i in range(17)
         ]
-        correct_week = datetimes[10:17]
 
-        for date in datetimes:
-            self.ua.save_activity(self.username, date)
+        missing_day = "2025-07-25 16:57:58"
+        datetimes_with_gap = [dt for dt in datetimes if dt != missing_day]
+
+        correct_week = [dt for dt in datetimes[10:17] if dt != missing_day]
+
+        for date in datetimes_with_gap:
+            end_time = (
+                datetime.strptime(date, "%Y-%m-%d %H:%M:%S") + timedelta(hours=1)
+            ).strftime("%Y-%m-%d %H:%M:%S")
+            self.ua.save_activity(self.username, date, end_time)
 
         user_id = self.ua.get_user_id(self.username)
 
@@ -83,7 +94,10 @@ class Test_User_Activity(unittest.TestCase):
         correct_week = [dt for dt in datetimes[10:17] if dt != missing_day]
 
         for date in datetimes_with_gap:
-            self.ua.save_activity(self.username, date)
+            end_time = (
+                datetime.strptime(date, "%Y-%m-%d %H:%M:%S") + timedelta(hours=1)
+            ).strftime("%Y-%m-%d %H:%M:%S")
+            self.ua.save_activity(self.username, date, end_time)
 
         user_id = self.ua.get_user_id(self.username)
 
@@ -98,12 +112,14 @@ class Test_User_Activity(unittest.TestCase):
         days_in_year = 366 if calendar.isleap(start_date.year) else 365
 
         for i in range(days_in_year):
-            date_str = (start_date + timedelta(days=i)).strftime("%Y-%m-%d %H:%M:%S")
-            self.ua.save_activity(self.username, date_str)
+            start = (start_date + timedelta(days=i)).strftime("%Y-%m-%d %H:%M:%S")
+            end = (start_date + timedelta(days=i, hours=2)).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+            self.ua.save_activity(self.username, start, end)
 
         user_id = self.ua.get_user_id(self.username)
         year_data = self.ua.get_user_year_activity(user_id)
-        print(year_data)
 
         self.assertEqual(len(year_data), days_in_year)
 
