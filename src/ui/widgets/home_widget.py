@@ -2,7 +2,7 @@ from datetime import datetime
 
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 
-from core.auto_login import Auto_Login
+from core.activity_calculator import Activity_Calculator
 from core.user_activity import User_Activity
 from ui.widgets.overall_activity import Overall_Activity
 from ui.widgets.week_histogram import Week_Histogram
@@ -15,19 +15,21 @@ class Home_Widget(QWidget):
         self.week_widget = None
         self.overall_activity = None
 
-    def change_screen_home(self):
+    def change_screen_home(self, username):
         self.parent.login_menu.setCurrentWidget(self.parent.logged_in_widget)
         self.parent.main_widget.setCurrentWidget(self.parent.home_widget)
 
-        al = Auto_Login()
-        username = al.load_logged_user()
-
         ua = User_Activity()
         user_id = ua.get_user_id(username)
-        today_date = datetime.now()
+        today_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         week_data = ua.get_user_week_activity(user_id, today_date)
 
         activity_data = ua.get_user_year_activity(user_id)
+
+        ac = Activity_Calculator()
+        week_data_in_hours = ac.calculate_date_to_hours(week_data)
+        activity_data_in_hours = ac.calculate_date_to_hours(activity_data)
 
         waw_container = self.parent.home_widget.findChild(
             QWidget, "week_activity_widget"
@@ -55,11 +57,11 @@ class Home_Widget(QWidget):
             oaw_layout.removeWidget(self.overall_activity)
             self.overall_activity.deleteLater()
 
-        self.week_widget = Week_Histogram(parent=waw_container, data=week_data)
+        self.week_widget = Week_Histogram(parent=waw_container, data=week_data_in_hours)
         waw_layout.addWidget(self.week_widget)
 
         self.overall_activity = Overall_Activity(
-            parent=oaw_container, data=activity_data
+            parent=oaw_container, data=activity_data_in_hours
         )
         oaw_layout.addWidget(self.overall_activity)
 

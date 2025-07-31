@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 class User_Activity:
     def __init__(self, db_path="student.db"):
         self.db_path = db_path
+        self.create_activity_table()
 
     def get_connection_and_cursor(self):
         connection = sqlite3.connect(self.db_path)
@@ -63,11 +64,14 @@ class User_Activity:
             "SELECT start_time, end_time FROM activity WHERE user_id = ? AND start_time >= ? AND start_time < ? ORDER BY start_time ASC",
             (user_id, start_str, end_str),
         )
-        result = cursor.fetchone()
+        result = cursor.fetchall()
         connection.close()
         return result
 
     def get_user_week_activity(self, user_id, input_date):
+        if isinstance(input_date, str):
+            input_date = datetime.strptime(input_date, "%Y-%m-%d %H:%M:%S")
+
         weekday = input_date.weekday()
         start_of_week = input_date - timedelta(days=weekday)
         week_table = []
@@ -76,7 +80,9 @@ class User_Activity:
             date_str = day.strftime("%Y-%m-%d %H:%M:%S")
             day_result = self.get_user_day_activity(user_id, date_str)
             if day_result:
-                week_table.append(day_result[0])
+                week_table.append(day_result)
+            else:
+                week_table.append(0.0)
 
         return week_table
 
@@ -90,8 +96,7 @@ class User_Activity:
             date_str = day.strftime("%Y-%m-%d %H:%M:%S")
             day_result = self.get_user_day_activity(user_id, date_str)
             if day_result:
-                year_table.append(day_result[0])
+                year_table.append(day_result)
+            else:
+                year_table.append(0.0)
         return year_table
-
-    def convert_time_to_hours(self, date):
-        pass

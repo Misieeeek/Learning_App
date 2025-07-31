@@ -21,6 +21,7 @@ class Main_Window(wnd, cls):
         self.setupUi(self)
         self.home_widget_controller = Home_Widget(self)
         self.activity_controller = User_Activity()
+        self.username = None
         self.remember = Auto_Login()
         self.login_status()
 
@@ -41,31 +42,37 @@ class Main_Window(wnd, cls):
                 self.remember.save_logged_in_out_user(username)
             else:
                 self.remember.save_logged_in_out_user()
-            self.activity_controller.save_activity(
-                username, datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            )
+
+            self.username = username
+            self.start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.main_widget.setCurrentWidget(self.home_widget)
             self.login_menu.setCurrentWidget(self.logged_in_widget)
-            self.home_widget_controller.change_screen_home()
+            self.home_widget_controller.change_screen_home(self.username)
 
     def on_log_out_btn_pressed(self):
-        self.record_activity.stop_and_save_recording()
-        username = self.remember.load_logged_user()
+        start_time = self.start_time
         self.activity_controller.save_activity(
-            username, datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.username, start_time, datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
         self.remember.save_logged_in_out_user()
         self.home_widget_controller.change_screen_sign_up_in()
 
     def login_status(self):
-        username = self.remember.load_logged_user()
-        if username is None:
+        self.username = self.remember.load_logged_user()
+        if self.username is None:
             self.home_widget_controller.change_screen_sign_up_in()
         else:
+            self.start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.home_widget_controller.change_screen_home(self.username)
+
+    def closeEvent(self, event):
+        if self.username:
+            end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.activity_controller.save_activity(
-                username, datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                self.username, self.start_time, end_time
             )
-            self.home_widget_controller.change_screen_home()
+
+        event.accept()
 
 
 if __name__ == "__main__":

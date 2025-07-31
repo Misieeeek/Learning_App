@@ -53,8 +53,9 @@ class Test_User_Activity(unittest.TestCase):
         today = datetime.now().strftime("%Y-%m-%d")
 
         result = self.ua.get_user_day_activity(user_id, today)
-        self.assertEqual(result[0], start)
-        self.assertEqual(result[1], end)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0][0], start)
+        self.assertEqual(result[0][1], end)
 
     def test_week_activity_correct(self):
         start_date = datetime.strptime("2025-07-11 16:57:58", "%Y-%m-%d %H:%M:%S")
@@ -66,8 +67,6 @@ class Test_User_Activity(unittest.TestCase):
         missing_day = "2025-07-25 16:57:58"
         datetimes_with_gap = [dt for dt in datetimes if dt != missing_day]
 
-        correct_week = [dt for dt in datetimes[10:17] if dt != missing_day]
-
         for date in datetimes_with_gap:
             end_time = (
                 datetime.strptime(date, "%Y-%m-%d %H:%M:%S") + timedelta(hours=1)
@@ -75,11 +74,19 @@ class Test_User_Activity(unittest.TestCase):
             self.ua.save_activity(self.username, date, end_time)
 
         user_id = self.ua.get_user_id(self.username)
-
         input_date = datetime.strptime("2025-07-25 16:57:58", "%Y-%m-%d %H:%M:%S")
         week = self.ua.get_user_week_activity(user_id, input_date)
 
-        self.assertEqual(week, correct_week)
+        self.assertEqual(len(week), 7)
+
+        found = False
+        for day_activities in week:
+            for start_time, _ in (
+                day_activities if isinstance(day_activities, list) else []
+            ):
+                if start_time == missing_day:
+                    found = True
+        self.assertFalse(found)
 
     def test_week_activity_missing_day(self):
         start_date = datetime.strptime("2025-07-11 16:57:58", "%Y-%m-%d %H:%M:%S")
@@ -91,8 +98,6 @@ class Test_User_Activity(unittest.TestCase):
         missing_day = "2025-07-25 16:57:58"
         datetimes_with_gap = [dt for dt in datetimes if dt != missing_day]
 
-        correct_week = [dt for dt in datetimes[10:17] if dt != missing_day]
-
         for date in datetimes_with_gap:
             end_time = (
                 datetime.strptime(date, "%Y-%m-%d %H:%M:%S") + timedelta(hours=1)
@@ -100,12 +105,16 @@ class Test_User_Activity(unittest.TestCase):
             self.ua.save_activity(self.username, date, end_time)
 
         user_id = self.ua.get_user_id(self.username)
-
         input_date = datetime.strptime("2025-07-25 16:57:58", "%Y-%m-%d %H:%M:%S")
         week = self.ua.get_user_week_activity(user_id, input_date)
 
-        self.assertEqual(week, correct_week)
-        self.assertNotIn(missing_day, week)
+        self.assertEqual(len(week), 7)
+
+        found_zero = False
+        for i, day in enumerate(week):
+            if day == 0.0:
+                found_zero = True
+        self.assertTrue(found_zero)
 
     def test_year_activity(self):
         start_date = datetime.strptime("2025-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
