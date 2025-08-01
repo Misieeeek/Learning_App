@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtGui import QBrush, QColor, QFont, QPainter, QPen
 from PyQt5.QtWidgets import QToolTip, QWidget
@@ -6,7 +8,13 @@ from PyQt5.QtWidgets import QToolTip, QWidget
 class Week_Histogram(QWidget):
     def __init__(self, parent=None, data=None):
         super().__init__(parent)
-        self.data = [float(x) for x in data] if data else []
+        self.data = [0.0] * 7
+        if isinstance(data, dict):
+            for date_str, value in data.items():
+                dt = datetime.strptime(date_str, "%Y-%m-%d")
+                index = dt.weekday()
+                self.data[index] += float(value)
+
         self.setMouseTracking(True)
         self.hovered_index = None
         self.labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -54,7 +62,7 @@ class Week_Histogram(QWidget):
             text_x = x + (bar_width // 2) - 10
             qp.setPen(Qt.white)
             qp.drawText(text_x, self.height() - 5, label)
-            qp.end()
+        qp.end()
 
     def mouseMoveEvent(self, event):
         if not self.data:
@@ -73,7 +81,7 @@ class Week_Histogram(QWidget):
                     self.hovered_index = idx
                     QToolTip.showText(
                         self.mapToGlobal(event.pos()),
-                        f"Time spent: {self.data[idx]} hours",
+                        f"Time spent: {round(self.data[idx], 2)} hours",
                         self,
                     )
                     self.setStyleSheet("""

@@ -29,14 +29,13 @@ class Overall_Activity(QWidget):
         end_day = datetime.date(self.year, 12, 31)
         total_days = (end_day - start_day).days + 1
 
-        padded_data = self.data[:total_days]
-        if len(padded_data) < total_days:
-            padded_data += [0] * (total_days - len(padded_data))
-
         full_data = []
-        for i in range(total_days):
-            date = start_day + datetime.timedelta(days=i)
-            full_data.append((date, padded_data[i]))
+        if isinstance(self.data, dict):
+            for i in range(total_days):
+                date = start_day + datetime.timedelta(days=i)
+                date_str = date.strftime("%Y-%m-%d")
+                value = float(self.data.get(date_str, 0.0))
+                full_data.append((date, value))
 
         return full_data
 
@@ -46,7 +45,7 @@ class Overall_Activity(QWidget):
 
         qp = QPainter(self)
         qp.setRenderHint(QPainter.Antialiasing)
-        max_val = max(self.data or [1])
+        max_val = max([v for _, v in self.processed_data] or [1])
 
         font = QFont()
         font.setPointSize(8)
@@ -123,7 +122,9 @@ class Overall_Activity(QWidget):
             cell_rect = QRect(x, y, self.cell_size, self.cell_size)
 
             if cell_rect.contains(pos):
-                tooltip_text = f"{date.strftime('%A, %b %d %Y')}\n{value} hour(s) spent"
+                tooltip_text = (
+                    f"{date.strftime('%A, %b %d %Y')}\n{round(value, 2)} hour(s) spent"
+                )
                 QToolTip.showText(
                     self.mapToGlobal(pos),
                     tooltip_text,

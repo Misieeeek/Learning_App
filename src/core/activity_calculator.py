@@ -33,9 +33,7 @@ class Activity_Calculator:
             duration = (end - current_start).total_seconds() / 3600.0
             daily_hours[day_str] = daily_hours.get(day_str, 0) + duration
 
-        sorted_days = sorted(daily_hours.keys())
-        hours_list = [daily_hours[day] for day in sorted_days]
-        return hours_list
+        return daily_hours
 
     def get_intervals(self, data):
         intervals = []
