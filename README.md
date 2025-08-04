@@ -7,18 +7,35 @@ This project is designed to help users learn by using different learning methods
 ## Table of Contents
 
 - [Installation Guide](#installation-guide)
-  - [Linux](#linux)
-  - [Windows](#windows)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
 - [How to use](#how-to-use)
 
 ## Installation Guide
 
+### Requirements
+
+- PyQt5
+
+### Installation
+
 1. Clone this repository:
+
    ```bash
    git clone https://github.com/Misieeeek/Learning_App.git
    cd Learning_App
    ```
 
-### Linux
+2. Create Virtual Enviroment
 
-### Windows
+```bash
+python -m venv venv
+source venv/bin/activate # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+3. Run application
+
+```bash
+python main.py
+```
