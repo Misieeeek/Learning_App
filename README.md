@@ -21,10 +21,10 @@ This project is designed to help users learn by using different learning methods
 
 1. Clone this repository:
 
-   ```bash
-   git clone https://github.com/Misieeeek/Learning_App.git
-   cd Learning_App
-   ```
+```bash
+git clone https://github.com/Misieeeek/Learning_App.git
+cd Learning_App
+```
 
 2. Create Virtual Enviroment
 
