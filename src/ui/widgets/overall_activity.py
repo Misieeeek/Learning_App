@@ -41,7 +41,12 @@ class Overall_Activity(QWidget):
 
     def paintEvent(self, event):
         if not self.processed_data:
-            return
+            start_day = datetime.date(self.year, 1, 1)
+            end_day = datetime.date(self.year, 12, 31)
+            total_days = (end_day - start_day).days + 1
+            self.processed_data = [
+                (start_day + datetime.timedelta(days=i), 0.0) for i in range(total_days)
+            ]
 
         qp = QPainter(self)
         qp.setRenderHint(QPainter.Antialiasing)

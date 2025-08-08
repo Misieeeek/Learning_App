@@ -30,7 +30,10 @@ class Week_Histogram(QWidget):
         qp.setRenderHint(QPainter.Antialiasing)
 
         bar_width = self.width() // len(self.data)
-        max_h = max(self.data)
+        max_h = max(self.data) or 1
+
+        if max_h == 0:
+            max_h = 1
 
         font = QFont()
         font.setPointSize(10)
@@ -72,7 +75,7 @@ class Week_Histogram(QWidget):
         idx = event.x() // bar_width
 
         if 0 <= idx < len(self.data):
-            max_h = max(self.data)
+            max_h = max(self.data) or 1
             bar_height = int((self.data[idx] / max_h) * (self.height() - 40))
             bar_top_y = self.height() - bar_height - 20
 
