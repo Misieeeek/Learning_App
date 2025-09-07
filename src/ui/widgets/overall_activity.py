@@ -1,8 +1,8 @@
 import datetime
 
-from PyQt5.QtCore import QRect, Qt
-from PyQt5.QtGui import QBrush, QColor, QFont, QPainter, QPen
-from PyQt5.QtWidgets import QToolTip, QWidget
+from PyQt6.QtCore import QRect
+from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen
+from PyQt6.QtWidgets import QToolTip, QWidget
 
 
 class Overall_Activity(QWidget):
@@ -49,7 +49,7 @@ class Overall_Activity(QWidget):
             ]
 
         qp = QPainter(self)
-        qp.setRenderHint(QPainter.Antialiasing)
+        qp.setRenderHint(QPainter.RenderHint.Antialiasing)
         max_val = max([v for _, v in self.processed_data] or [1])
 
         font = QFont()
@@ -58,7 +58,7 @@ class Overall_Activity(QWidget):
 
         days_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         for i, label in enumerate(days_labels):
-            qp.setPen(Qt.white)
+            qp.setPen(QColor("white"))
             y = self.top_padding + i * (self.cell_size + self.spacing) + 10
             qp.drawText(2, y, label)
 
@@ -79,7 +79,7 @@ class Overall_Activity(QWidget):
 
             if date.day == 1 or (last_month != date.month and row == 0):
                 month_label = date.strftime("%b")
-                qp.setPen(Qt.white)
+                qp.setPen(QColor("white"))
                 qp.drawText(x, 10, month_label)
                 last_month = date.month
 

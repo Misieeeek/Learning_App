@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from PyQt5.QtCore import QRect, Qt
-from PyQt5.QtGui import QBrush, QColor, QFont, QPainter, QPen
-from PyQt5.QtWidgets import QToolTip, QWidget
+from PyQt6.QtCore import QRect
+from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen
+from PyQt6.QtWidgets import QToolTip, QWidget
 
 
 class Week_Histogram(QWidget):
@@ -27,7 +27,7 @@ class Week_Histogram(QWidget):
             return
 
         qp = QPainter(self)
-        qp.setRenderHint(QPainter.Antialiasing)
+        qp.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         bar_width = self.width() // len(self.data)
         max_h = max(self.data) or 1
@@ -63,7 +63,7 @@ class Week_Histogram(QWidget):
 
             label = self.labels[i % len(self.labels)]
             text_x = x + (bar_width // 2) - 10
-            qp.setPen(Qt.white)
+            qp.setPen(QColor("white"))
             qp.drawText(text_x, self.height() - 5, label)
         qp.end()
 

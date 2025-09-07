@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QVBoxLayout, QWidget
 
 from core.activity_calculator import Activity_Calculator
 from core.user_activity import User_Activity

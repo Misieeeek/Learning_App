@@ -2,8 +2,8 @@ import os
 import sys
 from datetime import datetime
 
-from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication
+from PyQt6 import uic
+from PyQt6.QtWidgets import QApplication
 
 from core.auto_login import Auto_Login
 from core.login import Login
@@ -79,4 +79,4 @@ if __name__ == "__main__":
     app = QApplication([])
     window = Main_Window()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
