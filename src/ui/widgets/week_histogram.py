@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from PyQt6.QtCore import QRect
-from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen
-from PyQt6.QtWidgets import QToolTip, QWidget
+from PySide6.QtCore import QRect
+from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPen
+from PySide6.QtWidgets import QToolTip, QWidget
 
 
 class Week_Histogram(QWidget):

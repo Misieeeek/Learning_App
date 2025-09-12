@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from core.user_repository import User_Repository
 

@@ -1,24 +1,32 @@
-import os
 import sys
 from datetime import datetime
 
-from PyQt6 import uic
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMainWindow
 
 from core.auto_login import Auto_Login
 from core.login import Login
 from core.register import Register
 from core.user_activity import User_Activity
+from ui.main_window_ui import Ui_Form
 from ui.widgets.home_widget import Home_Widget
 
-ui_file = os.path.join(os.path.dirname(__file__), "ui", "main_window.ui")
-wnd, cls = uic.loadUiType(ui_file)
+# ui_file = os.path.join(os.path.dirname(__file__), "ui", "main_window.ui")
+# wnd, cls = uic.loadUiType(ui_file)
 
 
-class Main_Window(wnd, cls):
+class Main_Window(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setupUi(self)
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
+
+        self.login_menu = self.ui.login_menu
+        self.logged_in_widget = self.ui.logged_in_widget
+        self.logged_out_widget = self.ui.logged_out_widget
+        self.main_widget = self.ui.main_widget
+        self.home_widget = self.ui.home_widget
+        self.sign_up_in_widget = self.ui.sign_up_in_widget
+
         self.home_widget_controller = Home_Widget(self)
         self.activity_controller = User_Activity()
         self.username = None
