@@ -15,7 +15,8 @@ This project is designed to help users learn by using different learning methods
 
 ### Requirements
 
-- PyQt5
+- PySide6
+- bcrypt
 
 ### Installation
 

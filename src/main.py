@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from core.auto_login import Auto_Login
 from core.login import Login
 from core.register import Register
+from core.todo_repository import Todo
 from core.user_activity import User_Activity
 from ui.main_window_ui import Ui_Form
 from ui.widgets.home_widget import Home_Widget
@@ -29,6 +30,7 @@ class Main_Window(QMainWindow):
 
         self.home_widget_controller = Home_Widget(self)
         self.activity_controller = User_Activity()
+        self.todo_widget_controller = Todo()
         self.username = None
         self.remember = Auto_Login()
         self.login_status()
@@ -39,6 +41,10 @@ class Main_Window(QMainWindow):
         confirm_password = self.confirm_password_input.text()
         new_user = Register(username, password, confirm_password, parent=self)
         new_user.register_user()
+
+    def on_to_do_btn_pressed(self):
+        # SCREEN MENAGER
+        pass
 
     def on_sign_in_btn_pressed(self):
         username = self.username_in_input.text()
