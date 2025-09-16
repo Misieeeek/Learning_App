@@ -1,18 +1,16 @@
 import sys
 from datetime import datetime
 
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton
 
 from core.auto_login import Auto_Login
 from core.login import Login
 from core.register import Register
-from core.todo_repository import Todo
+
+# from core.todo_repository import Todo
 from core.user_activity import User_Activity
 from ui.main_window_ui import Ui_Form
 from ui.widgets.home_widget import Home_Widget
-
-# ui_file = os.path.join(os.path.dirname(__file__), "ui", "main_window.ui")
-# wnd, cls = uic.loadUiType(ui_file)
 
 
 class Main_Window(QMainWindow):
@@ -20,6 +18,11 @@ class Main_Window(QMainWindow):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+
+        for btn in self.findChildren(QPushButton):
+            method_name = f"on_{btn.objectName()}_pressed"
+            if hasattr(self, method_name):
+                btn.clicked.connect(getattr(self, method_name))
 
         self.login_menu = self.ui.login_menu
         self.logged_in_widget = self.ui.logged_in_widget
@@ -30,15 +33,15 @@ class Main_Window(QMainWindow):
 
         self.home_widget_controller = Home_Widget(self)
         self.activity_controller = User_Activity()
-        self.todo_widget_controller = Todo()
+        # self.todo_widget_controller = Todo()
         self.username = None
         self.remember = Auto_Login()
         self.login_status()
 
     def on_sign_up_btn_pressed(self):
-        username = self.username_up_input.text()
-        password = self.password_up_input.text()
-        confirm_password = self.confirm_password_input.text()
+        username = self.ui.username_up_input.text()
+        password = self.ui.password_up_input.text()
+        confirm_password = self.ui.confirm_password_input.text()
         new_user = Register(username, password, confirm_password, parent=self)
         new_user.register_user()
 
@@ -47,12 +50,12 @@ class Main_Window(QMainWindow):
         pass
 
     def on_sign_in_btn_pressed(self):
-        username = self.username_in_input.text()
-        password = self.password_in_input.text()
+        username = self.ui.username_in_input.text()
+        password = self.ui.password_in_input.text()
         user = Login(username, password, parent=self)
         if user.login():
             self.activity_controller.create_activity_table()
-            if self.stay_logged_cb.isChecked():
+            if self.ui.stay_logged_cb.isChecked():
                 self.remember.save_logged_in_out_user(username)
             else:
                 self.remember.save_logged_in_out_user()
