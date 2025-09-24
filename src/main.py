@@ -4,6 +4,7 @@ from datetime import datetime
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton
 
 from core.auto_login import Auto_Login
+from core.database_manager import Database_Manager
 from core.login import Login
 from core.register import Register
 
@@ -31,8 +32,12 @@ class Main_Window(QMainWindow):
         self.home_widget = self.ui.home_widget
         self.sign_up_in_widget = self.ui.sign_up_in_widget
 
+        self.db_manager = Database_Manager()
+        self.db_manager.create_tables()
+
         self.home_widget_controller = Home_Widget(self)
         self.activity_controller = User_Activity()
+
         # self.todo_widget_controller = Todo()
         self.username = None
         self.remember = Auto_Login()
@@ -54,7 +59,6 @@ class Main_Window(QMainWindow):
         password = self.ui.password_in_input.text()
         user = Login(username, password, parent=self)
         if user.login():
-            self.activity_controller.create_activity_table()
             if self.ui.stay_logged_cb.isChecked():
                 self.remember.save_logged_in_out_user(username)
             else:

@@ -18,6 +18,8 @@ This project is designed to help users learn by using different learning methods
 - PySide6
 - bcrypt
 
+Note: Everything will be installed while creating venv and installing requirements.txt
+
 ### Installation
 
 1. Clone this repository:
@@ -38,5 +40,6 @@ pip install -r requirements.txt
 3. Run application
 
 ```bash
+cd src
 python main.py
 ```
