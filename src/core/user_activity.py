@@ -1,17 +1,10 @@
 import calendar
-import sqlite3
 from datetime import datetime, timedelta
 
 
 class User_Activity:
     def __init__(self, db_path="student.db"):
         self.db_path = db_path
-        self.create_activity_table()
-
-    def get_connection_and_cursor(self):
-        connection = sqlite3.connect(self.db_path)
-        cursor = connection.cursor()
-        return connection, cursor
 
     def save_activity(self, username, start_time, end_time):
         connection, cursor = self.get_connection_and_cursor()

@@ -1,16 +1,9 @@
-import sqlite3
-
 from core.password_hasher import Password_Hasher
 
 
 class User_Repository:
     def __init__(self, db_path="student.db"):
         self.db_path = db_path
-
-    def get_connection_and_cursor(self):
-        connection = sqlite3.connect(self.db_path)
-        cursor = connection.cursor()
-        return connection, cursor
 
     def save_user(self, username, password):
         connection, cursor = self.get_connection_and_cursor()

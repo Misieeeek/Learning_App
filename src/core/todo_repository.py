@@ -1,15 +1,6 @@
-import sqlite3
-
-
 class Todo:
     def __init__(self, user_id, db_path="student.db"):
         self.db_path = db_path
-        self.create_todo_table()
-
-    def get_connection_and_cursor(self):
-        connection = sqlite3.connect(self.db_path)
-        cursor = connection.cursor()
-        return connection, cursor
 
     def create_todo_table(self):
         connection, cursor = self.get_connection_and_cursor()
