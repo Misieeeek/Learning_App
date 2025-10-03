@@ -3,6 +3,8 @@ import sqlite3
 from core.user_activity import User_Activity
 from core.user_repository import User_Repository
 
+# from core.todo_repo import Todo
+
 
 class Database_Manager:
     def __init__(self):
@@ -19,3 +21,10 @@ class Database_Manager:
         self.user_repo.create_user_table()
         self.activity_controller.create_activity_table()
         # self.todo_repo.create_todo_table()
+
+    def get_user_id(self, username):
+        connection, cursor = self.get_connection_and_cursor()
+        cursor.execute("SELECT user_id FROM user WHERE username = ?", (username,))
+        result = cursor.fetchone()
+        connection.close()
+        return result[0] if result else None
