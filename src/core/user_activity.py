@@ -1,20 +1,36 @@
 import calendar
+import logging
+import sqlite3
 from datetime import datetime, timedelta
 
-from core.database_manager import Database_Manager
-
+logger = logging.getLogger(__name__)
 
 class User_Activity:
     def __init__(self, db_path="student.db"):
         self.db_path = db_path
-        self.db_manager = Database_Manager()
 
+    def _get_connection_and_cursor(self):
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        return connection, cursor
+    
+    def _get_user_id(self, username: str):
+        """Własna metoda do pobierania user_id"""
+        try:
+            connection, cursor = self._get_connection_and_cursor()
+            cursor.execute("SELECT user_id FROM user WHERE username = ?", (username,))
+            result = cursor.fetchone()
+            connection.close()
+            return result[0] if result else None
+        except sqlite3.Error as e:
+            logger.error(f"Error getting user ID: {e}")
+            return None
     def save_activity(self, username, start_time, end_time):
-        connection, cursor = self.db_manager.get_connection_and_cursor()
+        connection, cursor = self._get_connection_and_cursor()
 
         self.create_activity_table()
 
-        user_id = self.db_manager.get_user_id(username)
+        user_id = self._get_user_id(username)
         if user_id is None:
             return
 
@@ -27,7 +43,7 @@ class User_Activity:
         connection.close()
 
     def create_activity_table(self):
-        connection, cursor = self.db_manager.get_connection_and_cursor()
+        connection, cursor = self._get_connection_and_cursor()
 
         query_create_tbl_activity = """CREATE TABLE IF NOT EXISTS activity(activity_id INTEGER PRIMARY KEY, user_id INTEGER REFERENCES user(user_id), start_time TEXT, end_time TEXT)"""
         cursor.execute(query_create_tbl_activity)
@@ -48,7 +64,7 @@ class User_Activity:
         start_str = start_of_day.strftime("%Y-%m-%d %H:%M:%S")
         end_str = end_of_day.strftime("%Y-%m-%d %H:%M:%S")
 
-        connection, cursor = self.db_manager.get_connection_and_cursor()
+        connection, cursor = self._get_connection_and_cursor()
         cursor.execute(
             "SELECT start_time, end_time FROM activity WHERE user_id = ? AND start_time >= ? AND start_time < ? ORDER BY start_time ASC",
             (user_id, start_str, end_str),

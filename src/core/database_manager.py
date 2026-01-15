@@ -7,9 +7,10 @@ from core.user_repository import User_Repository
 
 
 class Database_Manager:
-    def __init__(self):
-        self.activity_controller = User_Activity()
-        self.user_repo = User_Repository()
+    def __init__(self, db_path: str = "student.db"):
+        self.db_path = db_path
+        self.activity_controller = User_Activity(self.db_path)
+        self.user_repo = User_Repository(self.db_path)
         # self.todo_repo = Todo()
 
     def get_connection_and_cursor(self):
@@ -28,3 +29,4 @@ class Database_Manager:
         result = cursor.fetchone()
         connection.close()
         return result[0] if result else None
+

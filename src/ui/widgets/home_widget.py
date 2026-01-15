@@ -20,7 +20,7 @@ class Home_Widget(QWidget):
         self.parent.main_widget.setCurrentWidget(self.parent.home_widget)
 
         ua = User_Activity()
-        user_id = ua.get_user_id(username)
+        user_id = ua._get_user_id(username)
         today_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         week_data = ua.get_user_week_activity(user_id, today_date)

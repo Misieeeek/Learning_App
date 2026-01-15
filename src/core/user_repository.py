@@ -1,14 +1,18 @@
-from core.database_manager import Database_Manager
+import sqlite3
 from core.password_hasher import Password_Hasher
 
 
 class User_Repository:
     def __init__(self, db_path="student.db"):
         self.db_path = db_path
-        self.db_manager = Database_Manager()
+
+    def _get_connection_and_cursor(self):
+        connection = sqlite3.connect(self.db_path)
+        cursor = connection.cursor()
+        return connection, cursor
 
     def save_user(self, username, password):
-        connection, cursor = self.db_manager.get_connection_and_cursor()
+        connection, cursor = self._get_connection_and_cursor()
 
         hashed_pass = Password_Hasher.hash(password)
 
@@ -27,7 +31,7 @@ class User_Repository:
         connection.close()
 
     def create_user_table(self):
-        connection, cursor = self.db_manager.get_connection_and_cursor()
+        connection, cursor = self._get_connection_and_cursor()
 
         query_create_tbl_user = """CREATE TABLE IF NOT EXISTS user(user_id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT)"""
         cursor.execute(query_create_tbl_user)
@@ -36,7 +40,7 @@ class User_Repository:
         connection.close()
 
     def check_username_exists(self, username):
-        connection, cursor = self.db_manager.get_connection_and_cursor()
+        connection, cursor = self._get_connection_and_cursor()
 
         cursor.execute("SELECT COUNT(*) FROM user WHERE username = ?", (username,))
         result = cursor.fetchone()
@@ -45,7 +49,7 @@ class User_Repository:
         return result[0] > 0
 
     def get_user_password(self, username):
-        connection, cursor = self.db_manager.get_connection_and_cursor()
+        connection, cursor = self._get_connection_and_cursor()
 
         cursor.execute("SELECT password FROM user WHERE username = ?", (username,))
         result = cursor.fetchone()

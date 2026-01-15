@@ -12,7 +12,7 @@ from core.register import Register
 from core.user_activity import User_Activity
 from ui.main_window_ui import Ui_Form
 from ui.widgets.home_widget import Home_Widget
-
+from ui.widgets.quiz_widget import Quiz_Widget  
 
 class Main_Window(QMainWindow):
     def __init__(self):
@@ -37,6 +37,7 @@ class Main_Window(QMainWindow):
 
         self.home_widget_controller = Home_Widget(self)
         self.activity_controller = User_Activity()
+        self.quiz_widget_controller = Quiz_Widget(self)
 
         # self.todo_widget_controller = Todo()
         self.username = None
@@ -50,9 +51,38 @@ class Main_Window(QMainWindow):
         new_user = Register(username, password, confirm_password, parent=self)
         new_user.register_user()
 
+    def on_home_btn_pressed(self):
+        if self.username:
+            self.main_widget.setCurrentWidget(self.home_widget)
+            self.home_widget_controller.change_screen_home(self.username)
+    
     def on_to_do_btn_pressed(self):
-        # SCREEN MENAGER
-        pass
+        if self.username:
+            self.main_widget.setCurrentWidget(self.ui.todo_widget)
+    
+    def on_pomodoro_btn_pressed(self):
+        if self.username:
+            self.main_widget.setCurrentWidget(self.ui.pomodoro_widget)
+    
+    def on_quiz_btn_pressed(self):
+        if self.username:
+            self.main_widget.setCurrentWidget(self.ui.quiz_widget)
+    
+    def on_second_brain_btn_pressed(self):
+        if self.username:
+            self.main_widget.setCurrentWidget(self.ui.second_brain_widget)
+    
+    def on_incremental_reading_btn_pressed(self):
+        if self.username:
+            self.main_widget.setCurrentWidget(self.ui.incremental_reading_widget)
+    
+    def on_active_recall_btn_pressed(self):
+        if self.username:
+            self.main_widget.setCurrentWidget(self.ui.active_recall_widget)
+    
+    def on_spaced_repetition_btn_pressed(self):
+        if self.username:
+            self.main_widget.setCurrentWidget(self.ui.spaced_repetition_widget)
 
     def on_sign_in_btn_pressed(self):
         username = self.ui.username_in_input.text()
