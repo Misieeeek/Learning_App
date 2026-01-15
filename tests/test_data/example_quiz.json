@@ -1,0 +1,54 @@
+{
+  "questions": [
+    {
+      "question": "What is the capital of France?",
+      "answers": ["London", "Paris", "Berlin", "Madrid"],
+      "correct": 1
+    },
+    {
+      "question": "What is 2 + 2?",
+      "answers": ["3", "4", "5", "6"],
+      "correct": 1
+    },
+    {
+      "question": "Which planet is known as the Red Planet?",
+      "answers": ["Venus", "Mars", "Jupiter", "Saturn"],
+      "correct": 1
+    },
+    {
+      "question": "Who wrote 'Romeo and Juliet'?",
+      "answers": ["Charles Dickens", "Mark Twain", "William Shakespeare", "Jane Austen"],
+      "correct": 2
+    },
+    {
+      "question": "What is the largest ocean on Earth?",
+      "answers": ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
+      "correct": 3
+    },
+    {
+      "question": "In which year did World War II end?",
+      "answers": ["1943", "1944", "1945", "1946"],
+      "correct": 2
+    },
+    {
+      "question": "What is the smallest prime number?",
+      "answers": ["0", "1", "2", "3"],
+      "correct": 2
+    },
+    {
+      "question": "Which programming language is known for AI and machine learning?",
+      "answers": ["Java", "Python", "C++", "Ruby"],
+      "correct": 1
+    },
+    {
+      "question": "What is the speed of light in vacuum?",
+      "answers": ["299,792,458 m/s", "150,000,000 m/s", "500,000,000 m/s", "1,000,000,000 m/s"],
+      "correct": 0
+    },
+    {
+      "question": "Which element has the chemical symbol 'O'?",
+      "answers": ["Gold", "Oxygen", "Osmium", "Oganesson"],
+      "correct": 1
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+Q: What is the capital of France?
+A: London
+A: Paris=1
+A: Berlin
+A: Madrid
+
+Q: What is 2 + 2?
+A: 3
+A: 4=1
+A: 5
+A: 6
+
+Q: Which planet is known as the Red Planet?
+A: Venus
+A: Mars=1
+A: Jupiter
+A: Saturn
+
+Q: Who wrote 'Romeo and Juliet'?
+A: Charles Dickens
+A: Mark Twain
+A: William Shakespeare=1
+A: Jane Austen
+
+Q: What is the largest ocean on Earth?
+A: Atlantic Ocean
+A: Indian Ocean
+A: Arctic Ocean
+A: Pacific Ocean=1
+
+Q: In which year did World War II end?
+A: 1943
+A: 1944
+A: 1945=1
+A: 1946
+
+Q: What is the smallest prime number?
+A: 0
+A: 1
+A: 2=1
+A: 3
+
+Q: Which programming language is known for AI and machine learning?
+A: Java
+A: Python=1
+A: C++
+A: Ruby
+
+Q: What is the speed of light in vacuum?
+A: 299,792,458 m/s=1
+A: 150,000,000 m/s
+A: 500,000,000 m/s
+A: 1,000,000,000 m/s
+
+Q: Which element has the chemical symbol 'O'?
+A: Gold
+A: Oxygen=1
+A: Osmium
+A: Oganesson
