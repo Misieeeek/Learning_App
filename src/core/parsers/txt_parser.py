@@ -58,7 +58,7 @@ class txt_parser:
                         raise ValueError(
                             f"Question '{current_question}' has multiple correct answers marked"
                         )
-                    answer = answer[:-1].strip()
+                    answer = answer[:-2].strip()
                     correct_index = len(current_answers)
 
                 if not answer:

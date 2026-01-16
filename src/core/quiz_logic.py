@@ -52,19 +52,22 @@ class Quiz_Logic:
         if self.randomize_questions:
             random.shuffle(self.questions)
 
+        if self.randomize_questions and self.questions:
+            random.shuffle(self.questions)
+
+        if self.randomize_answers and self.questions:
+            for question in self.questions:
+                correct_answer = question["answers"][question["correct"]]
+                random.shuffle(question["answers"])
+                question["correct"] = question["answers"].index(correct_answer)
+
     def get_total_questions(self) -> int:
         return len(self.questions)
 
     def get_next_question(self) -> Optional[Dict[str, Any]]:
         if self.current_question_index >= len(self.questions):
             return None
-
         question = self.questions[self.current_question_index].copy()
-
-        if self.randomize_answers:
-            correct_answer = question["answers"][question["correct"]]
-            random.shuffle(question["answers"])
-            question["correct"] = question["answers"].index(correct_answer)
 
         return question
 

@@ -1,7 +1,15 @@
 import os
 
-from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
+from PySide6.QtCore import QSettings, Qt, QTimer
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from core.quiz_logic import Quiz_Logic
 
@@ -15,6 +23,14 @@ class Quiz_Widget(QWidget):
 
         self.quiz_logic = None
         self.current_file_path = None
+
+        self.answer_buttons = []
+        self.answers_layout = None
+        self.answers_container = None
+
+        self.progress_indicators = []
+        self.progress_layout = None
+        self.progress_container = None
 
         self.load_recent_files()
 
@@ -44,6 +60,69 @@ class Quiz_Widget(QWidget):
             self.start_quiz_btn = self.parent.ui.start_quiz_btn
             self.start_quiz_btn.clicked.connect(self.start_quiz)
             self.start_quiz_btn.setEnabled(False)
+
+        if (
+            self.parent
+            and hasattr(self.parent, "ui")
+            and hasattr(self.parent.ui, "stop_btn")
+        ):
+            self.stop_btn = self.parent.ui.stop_btn
+            self.stop_btn.clicked.connect(self.stop_quiz)
+
+        if (
+            self.parent
+            and hasattr(self.parent, "ui")
+            and hasattr(self.parent.ui, "next_quiz_question_btn")
+        ):
+            self.next_btn = self.parent.ui.next_quiz_question_btn
+            self.next_btn.clicked.connect(self.next_question)
+
+        if (
+            self.parent
+            and hasattr(self.parent, "ui")
+            and hasattr(self.parent.ui, "prev_quiz_question_btn")
+        ):
+            self.prev_btn = self.parent.ui.prev_quiz_question_btn
+            self.prev_btn.clicked.connect(self.previous_question)
+
+        self.setup_answer_area()
+
+        self.setup_progress_indicators()
+
+    def setup_answer_area(self):
+        """Przygotuj obszar na dynamiczne przyciski odpowiedzi"""
+        if not self.parent or not hasattr(self.parent, "ui"):
+            return
+
+        if not hasattr(self.parent.ui, "question_widget"):
+            return
+
+        self.answers_layout = QVBoxLayout()
+        self.answers_layout.setSpacing(10)
+        self.answers_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.answers_container = QWidget(self.parent.ui.question_widget)
+        self.answers_container.setGeometry(40, 150, 700, 280)
+        self.answers_container.setLayout(self.answers_layout)
+
+    def setup_progress_indicators(self):
+        if not self.parent or not hasattr(self.parent, "ui"):
+            return
+
+        if not hasattr(self.parent.ui, "question_widget"):
+            return
+
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QHBoxLayout
+
+        self.progress_layout = QHBoxLayout()
+        self.progress_layout.setSpacing(6)
+        self.progress_layout.setContentsMargins(0, 0, 0, 0)
+        self.progress_layout.setAlignment(Qt.AlignCenter)
+
+        self.progress_container = QWidget(self.parent.ui.question_widget)
+        self.progress_container.setGeometry(325, 465, 200, 30)
+        self.progress_container.setLayout(self.progress_layout)
 
     def setup_combobox(self):
         self.file_combobox.clear()
@@ -114,6 +193,8 @@ class Quiz_Widget(QWidget):
 
         self.quiz_logic.configure(params)
 
+        self.update_progress_indicators()
+
         if hasattr(self.parent, "ui") and hasattr(
             self.parent.ui, "quiz_stacked_widget"
         ):
@@ -121,7 +202,7 @@ class Quiz_Widget(QWidget):
                 self.parent.ui.question_widget
             )
 
-        self.show_next_question()
+        self.show_current_question()
 
     def get_quiz_parameters(self):
         params = {
@@ -131,7 +212,6 @@ class Quiz_Widget(QWidget):
             "show_answers": False,
         }
 
-        # Sprawdź radio buttony dla randomizacji pytań
         if hasattr(self.parent, "ui"):
             if (
                 hasattr(self.parent.ui, "rqoy_rbtn")
@@ -139,21 +219,18 @@ class Quiz_Widget(QWidget):
             ):
                 params["randomize_questions"] = True
 
-            # Randomizacja odpowiedzi
             if (
                 hasattr(self.parent.ui, "raoy_rbtn")
                 and self.parent.ui.raoy_rbtn.isChecked()
             ):
                 params["randomize_answers"] = True
 
-            # Pokaż wynik po każdym pytaniu
             if (
                 hasattr(self.parent.ui, "aeq_rbtn")
                 and self.parent.ui.aeq_rbtn.isChecked()
             ):
                 params["show_score_after_each"] = True
 
-            # Pokaż odpowiedzi
             if (
                 hasattr(self.parent.ui, "say_rbtn")
                 and self.parent.ui.say_rbtn.isChecked()
@@ -162,25 +239,324 @@ class Quiz_Widget(QWidget):
 
         return params
 
-    def show_next_question(self):
-        """Pokaż następne pytanie używając QuizLogic"""
+    def show_current_question(self):
         if not self.quiz_logic:
             return
 
-        question_data = self.quiz_logic.get_next_question()
+        current_index = self.quiz_logic.current_question_index
 
-        if question_data is None:
-            # Quiz zakończony
+        if current_index >= self.quiz_logic.get_total_questions():
             self.show_results()
             return
 
-        # Wyświetl pytanie w UI
-        # TODO: Zaktualizuj widgety pytania z question_data
-        print(f"Question: {question_data['question']}")
-        print(f"Answers: {question_data['answers']}")
+        question_data = self.quiz_logic.questions[current_index].copy()
+
+        if hasattr(self.parent, "ui") and hasattr(self.parent.ui, "question_lbl"):
+            self.parent.ui.question_lbl.setText(question_data["question"])
+            self.parent.ui.question_lbl.setStyleSheet("color: white;")
+
+        self.generate_answer_buttons(question_data["answers"])
+
+        self.update_progress_indicators()
+
+        self.update_navigation_buttons()
+
+        self.restore_answer_state(current_index)
+
+    def next_question(self):
+        if not self.quiz_logic:
+            return
+
+        total = self.quiz_logic.get_total_questions()
+        if self.quiz_logic.current_question_index < total - 1:
+            self.quiz_logic.current_question_index += 1
+            self.show_current_question()
+
+    def previous_question(self):
+        if not self.quiz_logic:
+            return
+
+        if self.quiz_logic.current_question_index > 0:
+            self.quiz_logic.current_question_index -= 1
+            self.show_current_question()
+
+    def update_navigation_buttons(self):
+        if not self.quiz_logic:
+            return
+
+        current = self.quiz_logic.current_question_index
+        total = self.quiz_logic.get_total_questions()
+
+        if hasattr(self, "prev_btn"):
+            self.prev_btn.setEnabled(current > 0)
+
+        if hasattr(self, "next_btn"):
+            self.next_btn.setEnabled(current < total - 1)
+
+    def generate_answer_buttons(self, answers):
+        self.clear_answer_buttons()
+
+        font = QFont()
+        font.setFamilies(["FiraMono Nerd Font"])
+        font.setPointSize(11)
+
+        for index, answer in enumerate(answers):
+            btn = QPushButton(answer)
+            btn.setFont(font)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: rgb(47, 47, 47); 
+                    color: white;
+                    padding: 10px;
+                    text-align: left;
+                    border: 2px solid transparent;
+                }
+                QPushButton:hover {
+                    background-color: rgb(67, 67, 67);
+                    border: 2px solid rgb(100, 100, 100);
+                }
+                QPushButton:pressed {
+                    background-color: rgb(30, 30, 30);
+                }
+            """)
+            btn.setMinimumHeight(50)
+            btn.setCursor(Qt.PointingHandCursor)
+
+            btn.clicked.connect(lambda checked, idx=index: self.check_answer(idx))
+
+            self.answers_layout.addWidget(btn)
+            self.answer_buttons.append(btn)
+
+    def clear_answer_buttons(self):
+        for btn in self.answer_buttons:
+            btn.deleteLater()
+        self.answer_buttons.clear()
+
+    def check_answer(self, answer_index):
+        if not self.quiz_logic:
+            return
+
+        current_index = self.quiz_logic.current_question_index
+
+        already_answered = any(
+            ans["question_index"] == current_index
+            for ans in self.quiz_logic.user_answers
+        )
+
+        if already_answered:
+            old_answer = next(
+                (
+                    ans
+                    for ans in self.quiz_logic.user_answers
+                    if ans["question_index"] == current_index
+                ),
+                None,
+            )
+            if old_answer and old_answer["is_correct"]:
+                self.quiz_logic.score -= 1
+            self.quiz_logic.total_answered -= 1
+
+            self.quiz_logic.user_answers = [
+                ans
+                for ans in self.quiz_logic.user_answers
+                if ans["question_index"] != current_index
+            ]
+
+        question = self.quiz_logic.questions[current_index]
+        is_correct = answer_index == question["correct"]
+
+        if is_correct:
+            self.quiz_logic.score += 1
+
+        self.quiz_logic.total_answered += 1
+
+        self.quiz_logic.user_answers.append(
+            {
+                "question_index": current_index,
+                "user_answer": answer_index,
+                "correct_answer": question["correct"],
+                "is_correct": is_correct,
+            }
+        )
+
+        correct_index = question["correct"]
+
+        self.answer_buttons[correct_index].setStyleSheet("""
+            QPushButton {
+                background-color: rgb(0, 150, 0);
+                color: white;
+                padding: 10px;
+                text-align: left;
+                border: 2px solid rgb(0, 200, 0);
+            }
+        """)
+
+        if not is_correct:
+            self.answer_buttons[answer_index].setStyleSheet("""
+                QPushButton {
+                    background-color: rgb(150, 0, 0);
+                    color: white;
+                    padding: 10px;
+                    text-align: left;
+                    border: 2px solid rgb(200, 0, 0);
+                }
+            """)
+
+        for btn in self.answer_buttons:
+            btn.setEnabled(False)
+
+        self.update_progress_indicators()
+
+        if self.quiz_logic.show_score_after_each:
+            if hasattr(self.parent, "ui") and hasattr(self.parent.ui, "question_lbl"):
+                score_text = f"\n\nWynik: {self.quiz_logic.score}/{self.quiz_logic.total_answered}"
+                current_text = self.parent.ui.question_lbl.text()
+                if "\n\nWynik:" in current_text:
+                    current_text = current_text.split("\n\nWynik:")[0]
+                self.parent.ui.question_lbl.setText(current_text + score_text)
+
+        if self.quiz_logic.show_answers:
+            if current_index < self.quiz_logic.get_total_questions() - 1:
+                QTimer.singleShot(1500, self.next_question)
+            else:
+                QTimer.singleShot(1500, self.show_results)
+
+    def restore_answer_state(self, question_index):
+        if not self.quiz_logic:
+            return
+
+        user_answer = next(
+            (
+                ans
+                for ans in self.quiz_logic.user_answers
+                if ans["question_index"] == question_index
+            ),
+            None,
+        )
+
+        if user_answer:
+            correct_index = user_answer["correct_answer"]
+            user_index = user_answer["user_answer"]
+
+            if correct_index < len(self.answer_buttons):
+                self.answer_buttons[correct_index].setStyleSheet("""
+                    QPushButton {
+                        background-color: rgb(0, 150, 0);
+                        color: white;
+                        padding: 10px;
+                        text-align: left;
+                        border: 2px solid rgb(0, 200, 0);
+                    }
+                """)
+
+            if not user_answer["is_correct"] and user_index < len(self.answer_buttons):
+                self.answer_buttons[user_index].setStyleSheet("""
+                    QPushButton {
+                        background-color: rgb(150, 0, 0);
+                        color: white;
+                        padding: 10px;
+                        text-align: left;
+                        border: 2px solid rgb(200, 0, 0);
+                    }
+                """)
+
+            for btn in self.answer_buttons:
+                btn.setEnabled(False)
+
+    def update_progress_indicators(self):
+        if not self.quiz_logic or not self.progress_layout:
+            return
+
+        for indicator in self.progress_indicators:
+            indicator.deleteLater()
+        self.progress_indicators.clear()
+
+        total_questions = self.quiz_logic.get_total_questions()
+        current_index = self.quiz_logic.current_question_index
+
+        visible_indices = self._get_visible_question_indices(
+            current_index, total_questions
+        )
+
+        for i, q_index in enumerate(visible_indices):
+            if q_index == -1:
+                dots_label = QLabel("...")
+                dots_label.setStyleSheet("color: white; font-size: 12px;")
+                self.progress_layout.addWidget(dots_label)
+                self.progress_indicators.append(dots_label)
+            else:
+                indicator = QLabel("●")
+                indicator.setFixedSize(15, 15)
+                indicator.setAlignment(Qt.AlignCenter)
+
+                color = self._get_indicator_color(q_index)
+
+                if q_index == current_index:
+                    indicator.setStyleSheet(f"""
+                        color: {color};
+                        font-size: 16px;
+                        font-weight: bold;
+                    """)
+                else:
+                    indicator.setStyleSheet(f"""
+                        color: {color};
+                        font-size: 12px;
+                    """)
+
+                self.progress_layout.addWidget(indicator)
+                self.progress_indicators.append(indicator)
+
+    def _get_visible_question_indices(self, current, total):
+        """
+        - Begin: [0, 1, 2, 3, 4, -1, total-1]
+        - Middle: [-1, current-2, current-1, current, current+1, current+2, -1, total-1]
+        - End: [0, -1, total-6, total-5, total-4, total-3, total-2, total-1]
+        """
+        if total <= 7:
+            return list(range(total))
+
+        visible = []
+
+        if current < 4:
+            visible = list(range(5))
+            visible.append(-1)
+            visible.append(total - 1)
+
+        elif current >= total - 4:
+            visible.append(0)
+            visible.append(-1)
+            visible.extend(list(range(total - 5, total)))
+
+        else:
+            visible.append(0)
+            visible.append(-1)
+            visible.extend([current - 1, current, current + 1])
+            visible.append(-1)
+            visible.append(total - 1)
+
+        return visible
+
+    def _get_indicator_color(self, question_index):
+        if not self.quiz_logic:
+            return "gray"
+
+        user_answer = next(
+            (
+                ans
+                for ans in self.quiz_logic.user_answers
+                if ans["question_index"] == question_index
+            ),
+            None,
+        )
+
+        if user_answer is None:
+            return "gray"
+        elif user_answer["is_correct"]:
+            return "rgb(0, 200, 0)"
+        else:
+            return "rgb(200, 0, 0)"
 
     def show_results(self):
-        """Pokaż wyniki quizu"""
         if not self.quiz_logic:
             return
 
@@ -193,7 +569,21 @@ class Quiz_Widget(QWidget):
             f"Percentage: {results['percentage']:.1f}%",
         )
 
-        # Wróć do ekranu parametrów
+        self.stop_quiz()
+
+    def stop_quiz(self):
+        if self.quiz_logic:
+            self.quiz_logic.reset()
+
+        self.clear_answer_buttons()
+
+        for indicator in self.progress_indicators:
+            indicator.deleteLater()
+        self.progress_indicators.clear()
+
+        if hasattr(self.parent, "ui") and hasattr(self.parent.ui, "question_lbl"):
+            self.parent.ui.question_lbl.setText("")
+
         if hasattr(self.parent, "ui") and hasattr(
             self.parent.ui, "quiz_stacked_widget"
         ):
