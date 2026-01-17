@@ -4,14 +4,29 @@ from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QFileDialog,
+    QHBoxLayout,
     QLabel,
     QMessageBox,
-    QPushButton,
     QVBoxLayout,
     QWidget,
 )
 
 from core.quiz_logic import Quiz_Logic
+
+
+class ClickableLabel(QLabel):
+    def __init__(self, text, callback, index):
+        super().__init__(text)
+        self.callback = callback
+        self.index = index
+        self.is_enabled = True
+
+    def mousePressEvent(self, event):
+        if self.is_enabled:
+            self.callback(self.index)
+
+    def setEnabled(self, enabled):
+        self.is_enabled = enabled
 
 
 class Quiz_Widget(QWidget):
@@ -90,7 +105,6 @@ class Quiz_Widget(QWidget):
         self.setup_progress_indicators()
 
     def setup_answer_area(self):
-        """Przygotuj obszar na dynamiczne przyciski odpowiedzi"""
         if not self.parent or not hasattr(self.parent, "ui"):
             return
 
@@ -111,9 +125,6 @@ class Quiz_Widget(QWidget):
 
         if not hasattr(self.parent.ui, "question_widget"):
             return
-
-        from PySide6.QtCore import Qt
-        from PySide6.QtWidgets import QHBoxLayout
 
         self.progress_layout = QHBoxLayout()
         self.progress_layout.setSpacing(6)
@@ -239,6 +250,19 @@ class Quiz_Widget(QWidget):
 
         return params
 
+    def update_navigation_buttons(self):
+        if not self.quiz_logic:
+            return
+
+        current = self.quiz_logic.current_question_index
+        total = self.quiz_logic.get_total_questions()
+
+        if hasattr(self, "prev_btn"):
+            self.prev_btn.setEnabled(current > 0)
+
+        if hasattr(self, "next_btn"):
+            self.next_btn.setEnabled(current < total - 1)
+
     def show_current_question(self):
         if not self.quiz_logic:
             return
@@ -280,18 +304,53 @@ class Quiz_Widget(QWidget):
             self.quiz_logic.current_question_index -= 1
             self.show_current_question()
 
-    def update_navigation_buttons(self):
-        if not self.quiz_logic:
+    def update_progress_indicators(self):
+        if not self.quiz_logic or not self.progress_layout:
             return
 
-        current = self.quiz_logic.current_question_index
-        total = self.quiz_logic.get_total_questions()
+        for indicator in self.progress_indicators:
+            indicator.deleteLater()
+        self.progress_indicators.clear()
 
-        if hasattr(self, "prev_btn"):
-            self.prev_btn.setEnabled(current > 0)
+        total_questions = self.quiz_logic.get_total_questions()
+        current_index = self.quiz_logic.current_question_index
 
-        if hasattr(self, "next_btn"):
-            self.next_btn.setEnabled(current < total - 1)
+        visible_indices = self._get_visible_question_indices(
+            current_index, total_questions
+        )
+
+        for i, q_index in enumerate(visible_indices):
+            if q_index == -1:
+                dots_label = QLabel("...")
+                dots_label.setStyleSheet("color: white; font-size: 12px;")
+                self.progress_layout.addWidget(dots_label)
+                self.progress_indicators.append(dots_label)
+            else:
+                if q_index == current_index:
+                    indicator = QLabel(str(q_index + 1))  # +1 bo numerujemy od 1
+                    indicator.setFixedSize(20, 20)
+                else:
+                    indicator = QLabel("●")
+                    indicator.setFixedSize(15, 15)
+
+                indicator.setAlignment(Qt.AlignCenter)
+
+                color = self._get_indicator_color(q_index)
+
+                if q_index == current_index:
+                    indicator.setStyleSheet(f"""
+                        color: {color};
+                        font-size: 14px;
+                        font-weight: bold;
+                    """)
+                else:
+                    indicator.setStyleSheet(f"""
+                        color: {color};
+                        font-size: 12px;
+                    """)
+
+                self.progress_layout.addWidget(indicator)
+                self.progress_indicators.append(indicator)
 
     def generate_answer_buttons(self, answers):
         self.clear_answer_buttons()
@@ -301,28 +360,23 @@ class Quiz_Widget(QWidget):
         font.setPointSize(11)
 
         for index, answer in enumerate(answers):
-            btn = QPushButton(answer)
+            btn = ClickableLabel(answer, self.check_answer, index)
             btn.setFont(font)
+            btn.setWordWrap(True)
             btn.setStyleSheet("""
-                QPushButton {
+                QLabel {
                     background-color: rgb(47, 47, 47); 
                     color: white;
                     padding: 10px;
-                    text-align: left;
                     border: 2px solid transparent;
                 }
-                QPushButton:hover {
+                QLabel:hover {
                     background-color: rgb(67, 67, 67);
                     border: 2px solid rgb(100, 100, 100);
-                }
-                QPushButton:pressed {
-                    background-color: rgb(30, 30, 30);
                 }
             """)
             btn.setMinimumHeight(50)
             btn.setCursor(Qt.PointingHandCursor)
-
-            btn.clicked.connect(lambda checked, idx=index: self.check_answer(idx))
 
             self.answers_layout.addWidget(btn)
             self.answer_buttons.append(btn)
@@ -382,22 +436,20 @@ class Quiz_Widget(QWidget):
         correct_index = question["correct"]
 
         self.answer_buttons[correct_index].setStyleSheet("""
-            QPushButton {
+            QLabel {
                 background-color: rgb(0, 150, 0);
                 color: white;
                 padding: 10px;
-                text-align: left;
                 border: 2px solid rgb(0, 200, 0);
             }
         """)
 
         if not is_correct:
             self.answer_buttons[answer_index].setStyleSheet("""
-                QPushButton {
+                QLabel {
                     background-color: rgb(150, 0, 0);
                     color: white;
                     padding: 10px;
-                    text-align: left;
                     border: 2px solid rgb(200, 0, 0);
                 }
             """)
@@ -440,22 +492,20 @@ class Quiz_Widget(QWidget):
 
             if correct_index < len(self.answer_buttons):
                 self.answer_buttons[correct_index].setStyleSheet("""
-                    QPushButton {
+                    QLabel {
                         background-color: rgb(0, 150, 0);
                         color: white;
                         padding: 10px;
-                        text-align: left;
                         border: 2px solid rgb(0, 200, 0);
                     }
                 """)
 
             if not user_answer["is_correct"] and user_index < len(self.answer_buttons):
                 self.answer_buttons[user_index].setStyleSheet("""
-                    QPushButton {
+                    QLabel {
                         background-color: rgb(150, 0, 0);
                         color: white;
                         padding: 10px;
-                        text-align: left;
                         border: 2px solid rgb(200, 0, 0);
                     }
                 """)
@@ -485,8 +535,13 @@ class Quiz_Widget(QWidget):
                 self.progress_layout.addWidget(dots_label)
                 self.progress_indicators.append(dots_label)
             else:
-                indicator = QLabel("●")
-                indicator.setFixedSize(15, 15)
+                if q_index == current_index:
+                    indicator = QLabel(str(q_index + 1))
+                    indicator.setFixedSize(20, 20)
+                else:
+                    indicator = QLabel("●")
+                    indicator.setFixedSize(15, 15)
+
                 indicator.setAlignment(Qt.AlignCenter)
 
                 color = self._get_indicator_color(q_index)
@@ -494,7 +549,7 @@ class Quiz_Widget(QWidget):
                 if q_index == current_index:
                     indicator.setStyleSheet(f"""
                         color: {color};
-                        font-size: 16px;
+                        font-size: 14px;
                         font-weight: bold;
                     """)
                 else:
@@ -507,11 +562,6 @@ class Quiz_Widget(QWidget):
                 self.progress_indicators.append(indicator)
 
     def _get_visible_question_indices(self, current, total):
-        """
-        - Begin: [0, 1, 2, 3, 4, -1, total-1]
-        - Middle: [-1, current-2, current-1, current, current+1, current+2, -1, total-1]
-        - End: [0, -1, total-6, total-5, total-4, total-3, total-2, total-1]
-        """
         if total <= 7:
             return list(range(total))
 
